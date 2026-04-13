@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:akfdelivery/features/dashboard/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
-import '../../../core/routes/app_routes.dart';
 import '../providers/orders_provider.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
 
@@ -74,7 +73,12 @@ class _DeliveryConfirmationScreenState
 
       if (success && mounted) {
         context.read<DashboardProvider>().fetchDashboardData();
-        context.go(AppRoutes.dashboard);
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => DashboardScreen()),
+          );
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Delivery confirmed!'),

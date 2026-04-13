@@ -340,12 +340,19 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'delivered':
-        return Colors.green.shade600;
-      case 'cancelled':
-        return Colors.red.shade600;
+      case 'assigned':
+        return Colors.blue.shade600;
+      case 'accepted':
+        return Colors.indigo.shade600;
+      case 'picked_up':
+        return Colors.teal.shade600;
       case 'out_for_delivery':
         return Colors.orange.shade600;
+      case 'delivered':
+        return Colors.green.shade600;
+      case 'rejected':
+      case 'cancelled':
+        return Colors.red.shade600;
       default:
         return Colors.blue.shade600;
     }

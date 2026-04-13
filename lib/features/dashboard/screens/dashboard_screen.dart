@@ -278,16 +278,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Colors.blue.shade400,
         ),
         _buildMetricCard(
-          'IN TRANSIT',
+          'ACCEPTED',
+          counts?.accepted.toString() ?? '0',
+          Colors.indigo.shade400,
+        ),
+        _buildMetricCard(
+          'PICKED UP',
+          counts?.pickedUp.toString() ?? '0',
+          Colors.teal.shade400,
+        ),
+        _buildMetricCard(
+          'OUT FOR DELIVERY',
           counts?.outForDelivery.toString() ?? '0',
           Colors.orange.shade400,
         ),
         _buildMetricCard(
-          'DELIVERED',
+          'DELIVERED TODAY',
           counts?.deliveredToday.toString() ?? '0',
           Colors.green.shade400,
         ),
-        _buildMetricCard('PENDING', '0', primaryColor.withValues(alpha: 0.5)),
+        _buildMetricCard(
+          'REJECTED',
+          counts?.rejected.toString() ?? '0',
+          primaryColor.withValues(alpha: 0.5),
+        ),
       ],
     );
   }

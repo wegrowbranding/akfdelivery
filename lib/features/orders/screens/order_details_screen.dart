@@ -498,7 +498,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         nextStatus = 'accepted';
         break;
       case 'accepted':
-        btnText = 'PICKED UP ORDER';
+        btnText = 'PICK UP BOUQUET';
         nextStatus = 'picked_up';
         break;
       case 'picked_up':
@@ -510,6 +510,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         nextStatus = 'delivered';
         break;
       case 'delivered':
+      case 'rejected':
+      case 'cancelled':
         return const SizedBox.shrink();
     }
 

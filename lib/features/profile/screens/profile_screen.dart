@@ -1,7 +1,6 @@
+import 'package:akfdelivery/features/auth/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
-import '../../../core/routes/app_routes.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -272,7 +271,10 @@ class ProfileScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         authProvider.logout();
-        context.go(AppRoutes.login);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
       },
       child: Container(
         height: 60,

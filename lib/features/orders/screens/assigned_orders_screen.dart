@@ -26,7 +26,7 @@ class _AssignedOrdersScreenState extends State<AssignedOrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -68,12 +68,16 @@ class _AssignedOrdersScreenState extends State<AssignedOrdersScreen>
                     controller: _tabController,
                     children: [
                       _buildOrderList(
-                        listings?.newOrders ?? [],
+                        listings?.assigned ?? [],
                         'New Requests',
                       ),
                       _buildOrderList(
                         listings?.accepted ?? [],
-                        'Active Assignments',
+                        'Accepted Assignments',
+                      ),
+                      _buildOrderList(
+                        listings?.pickedUp ?? [],
+                        'Orders to be Transited',
                       ),
                       _buildOrderList(
                         listings?.outForDelivery ?? [],
@@ -161,6 +165,7 @@ class _AssignedOrdersScreenState extends State<AssignedOrdersScreen>
           tabs: const [
             Tab(text: 'NEW'),
             Tab(text: 'ACCEPTED'),
+            Tab(text: 'PICKED UP'),
             Tab(text: 'TRANSIT'),
           ],
         ),
@@ -353,108 +358,115 @@ class _AssignedOrdersScreenState extends State<AssignedOrdersScreen>
             ],
           ),
           const SizedBox(height: 24),
-          if (assignment.status == 'assigned')
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {}, // Handle Reject
-                    child: Container(
-                      height: 55,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.red.withValues(alpha: 0.2),
-                        ),
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'REJECT',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: Colors.red,
-                            fontSize: 12,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      final success = await context
-                          .read<OrdersProvider>()
-                          .updateStatus(assignment.id, 'accepted');
-                      if (success) {
-                        context.read<DashboardProvider>().fetchDashboardData();
-                      }
-                    },
-                    child: Container(
-                      height: 55,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [primaryColor, secondaryColor],
-                        ),
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'ACCEPT',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            fontSize: 12,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          else
-            GestureDetector(
-              onTap: () =>
-                  context.push(AppRoutes.orderDetails, extra: order?.id),
-              child: Container(
-                height: 55,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: textColor,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: textColor.withValues(alpha: 0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Text(
-                    'VIEW BOUTIQUE DETAILS',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      fontSize: 12,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          _buildActionSection(assignment),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionSection(OrderAssignment assignment) {
+    if (assignment.status == 'assigned') {
+      return Row(
+        children: [
+          Expanded(child: _buildSecondaryBtn('REJECT', Colors.red, () async {
+            final ok = await context.read<OrdersProvider>().updateStatus(
+              assignment.id,
+              'rejected',
+            );
+            if (ok) context.read<DashboardProvider>().fetchDashboardData();
+          })),
+          const SizedBox(width: 16),
+          Expanded(child: _buildPrimaryBtn('ACCEPT', () async {
+            final ok = await context.read<OrdersProvider>().updateStatus(
+              assignment.id,
+              'accepted',
+            );
+            if (ok) context.read<DashboardProvider>().fetchDashboardData();
+          })),
+        ],
+      );
+    }
+
+    String btnText = 'VIEW DETAILS';
+    String? nextStatus;
+
+    if (assignment.status == 'accepted') {
+      btnText = 'PICK UP BOUQUET';
+      nextStatus = 'picked_up';
+    } else if (assignment.status == 'picked_up') {
+      btnText = 'START DELIVERY';
+      nextStatus = 'out_for_delivery';
+    }
+
+    return _buildPrimaryBtn(btnText, () async {
+      if (nextStatus != null) {
+        final ok = await context.read<OrdersProvider>().updateStatus(
+          assignment.id,
+          nextStatus,
+        );
+        if (ok) {
+          context.read<DashboardProvider>().fetchDashboardData();
+          if (nextStatus == 'out_for_delivery') {
+             context.push(AppRoutes.orderDetails, extra: assignment.order?.id);
+          }
+        }
+      } else {
+        context.push(AppRoutes.orderDetails, extra: assignment.order?.id);
+      }
+    });
+  }
+
+  Widget _buildPrimaryBtn(String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 55,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [primaryColor, secondaryColor]),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              fontSize: 12,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSecondaryBtn(String label, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 55,
+        decoration: BoxDecoration(
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: color,
+              fontSize: 12,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -464,9 +476,15 @@ class _AssignedOrdersScreenState extends State<AssignedOrdersScreen>
       case 'assigned':
         return Colors.blue.shade400;
       case 'accepted':
-        return Colors.orange.shade400;
+        return Colors.indigo.shade400;
+      case 'picked_up':
+        return Colors.teal.shade400;
       case 'out_for_delivery':
+        return Colors.orange.shade400;
+      case 'delivered':
         return Colors.green.shade400;
+      case 'rejected':
+        return Colors.red.shade400;
       default:
         return Colors.black26;
     }

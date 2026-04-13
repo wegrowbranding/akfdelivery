@@ -1,8 +1,6 @@
+import 'package:akfdelivery/features/dashboard/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
-import '../../../core/routes/app_routes.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../providers/auth_provider.dart';
@@ -43,7 +41,12 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (response.success) {
-        context.go(AppRoutes.dashboard);
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => DashboardScreen()),
+          );
+        }
       } else {
         AppSnackBar.show(
           context,
@@ -195,46 +198,45 @@ class _LoginScreenState extends State<LoginScreen> {
     required IconData icon,
     bool isPassword = false,
     String? Function(String?)? validator,
-  }) =>
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.5,
-              color: Colors.black54,
-            ),
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.5,
+          color: Colors.black54,
+        ),
+      ),
+      const SizedBox(height: 8),
+      TextFormField(
+        controller: controller,
+        obscureText: isPassword,
+        style: const TextStyle(fontWeight: FontWeight.w500),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.black.withValues(alpha: 0.2)),
+          prefixIcon: Icon(icon, color: accentColor, size: 20),
+          filled: true,
+          fillColor: Colors.white.withValues(alpha: 0.5),
+          contentPadding: const EdgeInsets.symmetric(vertical: 20),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
           ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: controller,
-            obscureText: isPassword,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.black.withValues(alpha: 0.2)),
-              prefixIcon: Icon(icon, color: accentColor, size: 20),
-              filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.5),
-              contentPadding: const EdgeInsets.symmetric(vertical: 20),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: accentColor),
-              ),
-            ),
-            validator: validator,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
           ),
-        ],
-      );
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(color: accentColor),
+          ),
+        ),
+        validator: validator,
+      ),
+    ],
+  );
 }
